@@ -1,0 +1,3432 @@
+{
+  "datasets": [
+    {
+      "name": "muestra_predicha",
+      "displayName": "Muestra Consumo Real vs Predicho",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT consumo_kwh_m2_anio, consumo_predicho_kwh_m2, clasificacion_consumo, tipo_edificio, provincia, municipio, prioridad, segmento FROM workspace.energia_aragon.gold_resultados_optimizacion WHERE consumo_kwh_m2_anio IS NOT NULL\n  AND consumo_predicho_kwh_m2 IS NOT NULL\n  AND pmod(abs(hash(municipio, consumo_kwh_m2_anio)), 25) = 0",
+        "comment": "Muestra determinista (~4% de los edificios) para el gráfico de dispersión consumo real vs predicho.",
+        "dimensions": [
+          {
+            "name": "consumo_real",
+            "expr": "consumo_kwh_m2_anio",
+            "displayName": "Consumo real (kWh/m²·año)"
+          },
+          {
+            "name": "consumo_predicho",
+            "expr": "consumo_predicho_kwh_m2",
+            "displayName": "Consumo predicho (kWh/m²·año)"
+          },
+          {
+            "name": "clasificacion_consumo",
+            "expr": "clasificacion_consumo",
+            "displayName": "Letra energética"
+          },
+          {
+            "name": "tipo_edificio",
+            "expr": "tipo_edificio",
+            "displayName": "Tipo de edificio"
+          },
+          {
+            "name": "provincia",
+            "expr": "provincia"
+          },
+          {
+            "name": "municipio",
+            "expr": "municipio"
+          },
+          {
+            "name": "prioridad",
+            "expr": "prioridad",
+            "displayName": "Prioridad"
+          },
+          {
+            "name": "segmento",
+            "expr": "segmento",
+            "displayName": "Segmento"
+          }
+        ]
+      }
+    },
+    {
+      "name": "sugerencias",
+      "displayName": "Sugerencias de Ahorro por Edificio",
+      "config": {
+        "source": "workspace.energia_aragon.gold_sugerencias_consumo",
+        "measures": [
+          {
+            "name": "n_edificios",
+            "expr": "COUNT(1)",
+            "displayName": "Nº de edificios"
+          },
+          {
+            "name": "edad_media",
+            "expr": "AVG(edad_edificio)",
+            "displayName": "Edad media (años)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "brecha_media",
+            "expr": "AVG(brecha_kwh_m2)",
+            "displayName": "Brecha media sobre el óptimo (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "ahorro_estimado_gwh",
+            "expr": "SUM(ahorro_estimado_kwh) / 1000000.0",
+            "displayName": "Ahorro estimado total (GWh/año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "max",
+                "places": 1.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Medida de mejora sugerida para cada edificio junto con su ahorro estimado.",
+        "dimensions": [
+          {
+            "name": "provincia",
+            "expr": "provincia"
+          },
+          {
+            "name": "municipio",
+            "expr": "municipio"
+          },
+          {
+            "name": "tipo_edificio",
+            "expr": "tipo_edificio",
+            "displayName": "Tipo de edificio"
+          },
+          {
+            "name": "clasificacion_consumo",
+            "expr": "clasificacion_consumo",
+            "displayName": "Letra energética actual"
+          },
+          {
+            "name": "clase_objetivo",
+            "expr": "clase_objetivo",
+            "displayName": "Letra objetivo"
+          },
+          {
+            "name": "medida_principal",
+            "expr": "medida_principal",
+            "displayName": "Medida principal sugerida"
+          },
+          {
+            "name": "prioridad",
+            "expr": "prioridad",
+            "displayName": "Prioridad de actuación"
+          },
+          {
+            "name": "segmento",
+            "expr": "segmento",
+            "displayName": "Segmento de actuación"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resumen_gerencial",
+      "displayName": "Resumen Gerencial Municipal",
+      "config": {
+        "source": "workspace.energia_aragon.gold_resumen_gerencial",
+        "measures": [
+          {
+            "name": "n_edificios",
+            "expr": "SUM(n_edificios)",
+            "displayName": "Nº de edificios"
+          },
+          {
+            "name": "ahorro_gwh",
+            "expr": "SUM(ahorro_gwh)",
+            "displayName": "Ahorro potencial (GWh/año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "max",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "n_anomalias",
+            "expr": "SUM(n_anomalias)",
+            "displayName": "Edificios anómalos"
+          },
+          {
+            "name": "consumo_medio",
+            "expr": "SUM(consumo_medio * n_edificios) / SUM(n_edificios)",
+            "displayName": "Consumo medio (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "emision_media",
+            "expr": "SUM(emision_media * n_edificios) / SUM(n_edificios)",
+            "displayName": "Emisiones medias (kgCO₂/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Agregado del estudio por provincia, municipio, tipo de edificio, segmento y prioridad.",
+        "dimensions": [
+          {
+            "name": "provincia",
+            "expr": "provincia"
+          },
+          {
+            "name": "municipio",
+            "expr": "municipio"
+          },
+          {
+            "name": "tipo_edificio",
+            "expr": "tipo_edificio",
+            "displayName": "Tipo de edificio"
+          },
+          {
+            "name": "segmento",
+            "expr": "segmento",
+            "displayName": "Segmento"
+          },
+          {
+            "name": "prioridad",
+            "expr": "prioridad",
+            "displayName": "Prioridad"
+          }
+        ]
+      }
+    },
+    {
+      "name": "modelos_ml",
+      "displayName": "Métricas de Modelos ML",
+      "config": {
+        "source": "SELECT 'Regresión de consumo' AS tipo_modelo, 'HistGradientBoosting' AS modelo, 104.9 AS rmse, 73.5 AS mae, 0.223 AS r2, CAST(NULL AS DOUBLE) AS exactitud, CAST(NULL AS DOUBLE) AS f1_ponderado, CAST(NULL AS DOUBLE) AS silueta UNION ALL SELECT 'Regresión de consumo', 'Ridge (modelo base)', 114.0, NULL, 0.083, NULL, NULL, NULL UNION ALL SELECT 'Regresión de CO₂', 'HistGradientBoosting', 24.9, 16.6, 0.198, NULL, NULL, NULL UNION ALL SELECT 'Clasificación de letra', 'Random Forest', NULL, NULL, NULL, 0.499, 0.489, NULL UNION ALL SELECT 'Segmentación', 'KMeans (k=3)', NULL, NULL, NULL, NULL, NULL, 0.320",
+        "measures": [
+          {
+            "name": "rmse",
+            "expr": "AVG(rmse)",
+            "displayName": "RMSE (error típico)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "mae",
+            "expr": "AVG(mae)",
+            "displayName": "MAE (error medio)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "r2",
+            "expr": "AVG(r2)",
+            "displayName": "R² (capacidad explicativa)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 3.0
+              }
+            }
+          },
+          {
+            "name": "exactitud",
+            "expr": "AVG(exactitud)",
+            "displayName": "Exactitud (accuracy)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 3.0
+              }
+            }
+          },
+          {
+            "name": "f1_ponderado",
+            "expr": "AVG(f1_ponderado)",
+            "displayName": "F1 ponderado",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 3.0
+              }
+            }
+          },
+          {
+            "name": "silueta",
+            "expr": "AVG(silueta)",
+            "displayName": "Coeficiente de silueta",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 3.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Métricas de calidad documentadas de los modelos de machine learning del estudio.",
+        "dimensions": [
+          {
+            "name": "tipo_modelo",
+            "expr": "tipo_modelo",
+            "displayName": "Tipo de modelo"
+          },
+          {
+            "name": "modelo",
+            "expr": "modelo",
+            "displayName": "Modelo"
+          }
+        ]
+      }
+    },
+    {
+      "name": "planes_trabajo",
+      "displayName": "Planes de Trabajo por Segmento",
+      "config": {
+        "source": "workspace.energia_aragon.gold_planes_trabajo",
+        "measures": [
+          {
+            "name": "n_edificios",
+            "expr": "SUM(n_edificios)",
+            "displayName": "Nº de edificios"
+          },
+          {
+            "name": "n_p1",
+            "expr": "SUM(n_p1)",
+            "displayName": "Edificios prioritarios P1"
+          },
+          {
+            "name": "ahorro_total_gwh",
+            "expr": "SUM(ahorro_total_gwh)",
+            "displayName": "Ahorro total (GWh/año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "max",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "consumo_medio",
+            "expr": "AVG(consumo_medio)",
+            "displayName": "Consumo medio (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Plan de trabajo definido por el estudio para cada segmento de edificios.",
+        "dimensions": [
+          {
+            "name": "segmento",
+            "expr": "segmento",
+            "displayName": "Segmento"
+          },
+          {
+            "name": "letra_tipica",
+            "expr": "letra_tipica",
+            "displayName": "Letra típica actual"
+          },
+          {
+            "name": "letra_objetivo",
+            "expr": "letra_objetivo",
+            "displayName": "Letra objetivo"
+          },
+          {
+            "name": "medida_dominante",
+            "expr": "medida_dominante",
+            "displayName": "Medida dominante"
+          },
+          {
+            "name": "horizonte",
+            "expr": "horizonte",
+            "displayName": "Horizonte temporal"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resultados_optimizacion",
+      "displayName": "Resultados de Optimización por Edificio",
+      "config": {
+        "source": "workspace.energia_aragon.gold_resultados_optimizacion",
+        "measures": [
+          {
+            "name": "n_edificios",
+            "expr": "COUNT(1)",
+            "displayName": "Nº de edificios"
+          },
+          {
+            "name": "consumo_medio",
+            "expr": "AVG(consumo_kwh_m2_anio)",
+            "displayName": "Consumo medio (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "consumo_predicho_medio",
+            "expr": "AVG(consumo_predicho_kwh_m2)",
+            "displayName": "Consumo predicho medio (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "emision_media",
+            "expr": "AVG(emision_co2)",
+            "displayName": "Emisiones medias (kgCO₂/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "superficie_media",
+            "expr": "AVG(superficie_m2)",
+            "displayName": "Superficie media (m²)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "consumo_optimo_medio",
+            "expr": "AVG(consumo_optimo_kwh_m2)",
+            "displayName": "Consumo óptimo medio (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "brecha_media",
+            "expr": "AVG(brecha_kwh_m2)",
+            "displayName": "Brecha media sobre el óptimo (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "ahorro_total_gwh",
+            "expr": "SUM(ahorro_potencial_kwh) / 1000000.0",
+            "displayName": "Ahorro potencial total (GWh/año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "max",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "ahorro_medio_pct",
+            "expr": "AVG(ahorro_potencial_pct)",
+            "displayName": "Ahorro potencial medio (%)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "pct_brecha",
+            "expr": "SUM(CASE WHEN brecha_kwh_m2 > 0 THEN 1 ELSE 0 END) / COUNT(1)",
+            "displayName": "Edificios con brecha (%)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "n_prioridad_p1",
+            "expr": "SUM(CASE WHEN prioridad = 'P1' THEN 1 ELSE 0 END)",
+            "displayName": "Edificios prioritarios P1"
+          },
+          {
+            "name": "n_anomalia_consumo",
+            "expr": "SUM(CASE WHEN es_anomalia_consumo THEN 1 ELSE 0 END)",
+            "displayName": "Edificios anómalos en consumo"
+          },
+          {
+            "name": "n_anomalia_co2",
+            "expr": "SUM(CASE WHEN es_anomalia_co2 THEN 1 ELSE 0 END)",
+            "displayName": "Edificios anómalos en emisiones"
+          }
+        ],
+        "version": "1.1",
+        "comment": "Resultados por edificio del estudio de eficiencia energética de Aragón (154.538 edificios).",
+        "dimensions": [
+          {
+            "name": "clasificacion_consumo",
+            "expr": "clasificacion_consumo",
+            "displayName": "Letra energética (consumo)"
+          },
+          {
+            "name": "clasificacion_emisiones",
+            "expr": "clasificacion_emisiones",
+            "displayName": "Letra de emisiones"
+          },
+          {
+            "name": "tipo_edificio",
+            "expr": "tipo_edificio",
+            "displayName": "Tipo de edificio"
+          },
+          {
+            "name": "estado_edificio",
+            "expr": "estado_edificio",
+            "displayName": "Estado del edificio"
+          },
+          {
+            "name": "provincia",
+            "expr": "provincia"
+          },
+          {
+            "name": "municipio",
+            "expr": "municipio"
+          },
+          {
+            "name": "decada_construccion",
+            "expr": "FLOOR(anio_construccion / 10) * 10",
+            "displayName": "Década de construcción",
+            "comment": "Década de inicio (1900, 1910, …, 2020) calculada a partir del año de construcción."
+          },
+          {
+            "name": "periodo_construccion",
+            "expr": "CASE\n  WHEN anio_construccion < 1980 THEN 'Antes de 1980'\n  WHEN anio_construccion >= 2007 THEN '2007 o posterior'\n  ELSE '1980-2006'\nEND",
+            "displayName": "Época de construcción"
+          },
+          {
+            "name": "prioridad",
+            "expr": "prioridad",
+            "displayName": "Prioridad de actuación"
+          },
+          {
+            "name": "segmento",
+            "expr": "segmento",
+            "displayName": "Segmento de actuación"
+          }
+        ]
+      }
+    },
+    {
+      "name": "top_municipios",
+      "displayName": "Top Municipios por Ahorro",
+      "config": {
+        "source": "SELECT municipio, provincia,\n       SUM(ahorro_gwh) AS ahorro_gwh,\n       SUM(n_edificios) AS n_edificios,\n       SUM(n_anomalias) AS n_anomalias,\n       SUM(consumo_medio * n_edificios) / SUM(n_edificios) AS consumo_medio,\n       SUM(emision_media * n_edificios) / SUM(n_edificios) AS emision_media\nFROM workspace.energia_aragon.gold_resumen_gerencial GROUP BY municipio, provincia ORDER BY ahorro_gwh DESC LIMIT 15",
+        "measures": [
+          {
+            "name": "ahorro_gwh",
+            "expr": "SUM(ahorro_gwh)",
+            "displayName": "Ahorro potencial (GWh/año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "max",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "n_edificios",
+            "expr": "SUM(n_edificios)",
+            "displayName": "Nº de edificios"
+          },
+          {
+            "name": "n_anomalias",
+            "expr": "SUM(n_anomalias)",
+            "displayName": "Edificios anómalos"
+          },
+          {
+            "name": "consumo_medio",
+            "expr": "AVG(consumo_medio)",
+            "displayName": "Consumo medio (kWh/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "emision_media",
+            "expr": "AVG(emision_media)",
+            "displayName": "Emisiones medias (kgCO₂/m²·año)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Los 15 municipios con mayor ahorro potencial anual del estudio.",
+        "dimensions": [
+          {
+            "name": "municipio",
+            "expr": "municipio"
+          },
+          {
+            "name": "provincia",
+            "expr": "provincia"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "6780a42d",
+      "displayName": "Resumen Ejecutivo",
+      "layout": [
+        {
+          "widget": {
+            "name": "intro_resumen",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## Resumen ejecutivo del estudio\n",
+                    "**Qué hace:** esta página resume en cifras clave el estudio de eficiencia energética de los edificios de Aragón: cuántos edificios se analizaron, cuánta energía consumen, cuánto CO₂ emiten y cuánto se podría ahorrar.\n",
+                    "\n",
+                    "**Cómo:** se analizaron 154.538 edificios del catastro aragonés. Un modelo de inteligencia artificial estimó el consumo \"óptimo\" que cada edificio podría alcanzar y comparó esa referencia con su consumo real; la diferencia es la \"brecha\", y de ahí nace el ahorro potencial.\n",
+                    "\n",
+                    "**Resultado:** el 99,3% de los edificios tiene margen de mejora y el ahorro potencial asciende a unos 5.817,6 GWh al año. Use los filtros globales para explorar por provincia, municipio, tipo de edificio, letra energética, prioridad o segmento."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_edificios",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios analizados"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(n_edificios)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_consumo",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(consumo_medio)",
+                      "expression": "MEASURE(`consumo_medio`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Consumo medio (kWh/m²·año)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(consumo_medio)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_emisiones",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(emision_media)",
+                      "expression": "MEASURE(`emision_media`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Emisiones medias (kgCO₂/m²·año)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(emision_media)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_ahorro",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(ahorro_total_gwh)",
+                      "expression": "MEASURE(`ahorro_total_gwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Ahorro potencial (GWh/año)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(ahorro_total_gwh)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_brecha",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(pct_brecha)",
+                      "expression": "MEASURE(`pct_brecha`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios con brecha sobre el óptimo"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(pct_brecha)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_p1",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_prioridad_p1)",
+                      "expression": "MEASURE(`n_prioridad_p1`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios prioritarios (P1)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(n_prioridad_p1)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 7,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_anom_consumo",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_anomalia_consumo)",
+                      "expression": "MEASURE(`n_anomalia_consumo`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios anómalos en consumo"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(n_anomalia_consumo)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 7,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_anom_co2",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_anomalia_co2)",
+                      "expression": "MEASURE(`n_anomalia_co2`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios anómalos en emisiones"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(n_anomalia_co2)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 7,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_letras",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "clasificacion_consumo",
+                      "expression": "`clasificacion_consumo`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Distribución de edificios por letra energética (A–G)",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "clasificacion_consumo",
+                  "displayName": "clasificacion_consumo",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(n_edificios)",
+                  "displayName": "n_edificios",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "clasificacion_consumo",
+                  "displayName": "clasificacion_consumo",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "parque_edilicio",
+      "displayName": "Parque Edilicio",
+      "layout": [
+        {
+          "widget": {
+            "name": "intro_parque",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## El parque de edificios de Aragón\n",
+                    "**Qué hace:** retrata el \"stock\" de edificios analizado: de qué tipos son, cuándo se construyeron, su tamaño y dónde se concentran.\n",
+                    "\n",
+                    "**Cómo:** cada edificio del catastro se clasifica por tipo (vivienda individual, unifamiliar en bloque, bloque, edificio completo, local) y por década de construcción, desde 1900 hasta la actualidad.\n",
+                    "\n",
+                    "**Resultado:** el parque es mayoritariamente antiguo, lo que explica buena parte del consumo elevado. Los municipios concentran la mayoría del stock, con Zaragoza a la cabeza."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_tipo_edificio",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "tipo_edificio",
+                      "expression": "`tipo_edificio`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios por tipo de edificio"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "tipo_edificio",
+                  "displayName": "tipo_edificio",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(n_edificios)",
+                  "displayName": "n_edificios",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "tipo_edificio",
+                  "displayName": "tipo_edificio",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_decadas",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "decada_construccion",
+                      "expression": "`decada_construccion`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Edificios por década de construcción",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "decada_construccion",
+                  "displayName": "decada_construccion",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(n_edificios)",
+                  "displayName": "n_edificios",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "decada_construccion",
+                  "displayName": "decada_construccion",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_edad",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "measure(edad_media)",
+                      "expression": "MEASURE(`edad_media`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edad media del parque (años)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(edad_media)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_superficie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(superficie_media)",
+                      "expression": "MEASURE(`superficie_media`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Superficie media (m²)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(superficie_media)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 10,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "pie_estado",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    },
+                    {
+                      "name": "estado_edificio",
+                      "expression": "`estado_edificio`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Estado de los edificios: existentes, terminados y en proyecto"
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(n_edificios)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "n_edificios"
+                },
+                "color": {
+                  "fieldName": "estado_edificio",
+                  "displayName": "estado_edificio",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 10,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_municipios_edificios",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Top 15 municipios por número de edificios",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "municipio",
+                  "displayName": "municipio",
+                  "scale": {
+                    "type": "categorical",
+                    "categorySize": {
+                      "number": 15,
+                      "type": "number-of-categories"
+                    },
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(n_edificios)",
+                  "displayName": "n_edificios",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "municipio",
+                  "displayName": "municipio",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "consumo_optimo",
+      "displayName": "Consumo y Óptimo de Eficiencia",
+      "layout": [
+        {
+          "widget": {
+            "name": "intro_consumo",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## Consumo real frente al consumo óptimo\n",
+                    "**Qué hace:** compara el consumo medio real de los edificios con el \"óptimo de eficiencia\", es decir, el consumo típico de los edificios más eficientes (letra A) de cada tipo.\n",
+                    "\n",
+                    "**Cómo:** para cada tipo de edificio se toma como referencia el consumo mediano de los edificios clase A (vivienda individual 25,7 · unifamiliar en bloque 31,0 · bloque 31,6 · edificio completo 65,9 · local 94,7 kWh/m²·año). La diferencia entre el consumo real y esa referencia es la \"brecha\", y de ahí se deriva el ahorro potencial.\n",
+                    "\n",
+                    "**Resultado:** el parque construido antes de 1980 consume de media 287,8 kWh/m²·año, frente a 175,1 de lo construido desde 2007: las renovaciones tienen un impacto claro y medible."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_letras_consumo",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "clasificacion_consumo",
+                      "expression": "`clasificacion_consumo`"
+                    },
+                    {
+                      "name": "measure(consumo_medio)",
+                      "expression": "MEASURE(`consumo_medio`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Consumo medio por letra energética (A–G)",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "clasificacion_consumo",
+                  "displayName": "clasificacion_consumo",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(consumo_medio)",
+                  "displayName": "consumo_medio",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "clasificacion_consumo",
+                  "displayName": "clasificacion_consumo",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "tabla_tipos",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "tipo_edificio",
+                      "expression": "`tipo_edificio`"
+                    },
+                    {
+                      "name": "measure(consumo_medio)",
+                      "expression": "MEASURE(`consumo_medio`)"
+                    },
+                    {
+                      "name": "measure(consumo_optimo_medio)",
+                      "expression": "MEASURE(`consumo_optimo_medio`)"
+                    },
+                    {
+                      "name": "measure(brecha_media)",
+                      "expression": "MEASURE(`brecha_media`)"
+                    },
+                    {
+                      "name": "measure(ahorro_medio_pct)",
+                      "expression": "MEASURE(`ahorro_medio_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Consumo real, óptimo y brecha por tipo de edificio"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "tipo_edificio"
+                  },
+                  {
+                    "fieldName": "measure(consumo_medio)"
+                  },
+                  {
+                    "fieldName": "measure(consumo_optimo_medio)"
+                  },
+                  {
+                    "fieldName": "measure(brecha_media)"
+                  },
+                  {
+                    "fieldName": "measure(ahorro_medio_pct)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_epocas",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "periodo_construccion",
+                      "expression": "`periodo_construccion`"
+                    },
+                    {
+                      "name": "measure(consumo_medio)",
+                      "expression": "MEASURE(`consumo_medio`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Impacto de las renovaciones: consumo medio por época de construcción",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "periodo_construccion",
+                  "displayName": "periodo_construccion",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "custom-order",
+                      "orderedValues": [
+                        "Antes de 1980",
+                        "1980-2006",
+                        "2007 o posterior"
+                      ]
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(consumo_medio)",
+                  "displayName": "consumo_medio",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "periodo_construccion",
+                  "displayName": "periodo_construccion",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_brecha",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(brecha_media)",
+                      "expression": "MEASURE(`brecha_media`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Brecha media sobre el óptimo (kWh/m²·año)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(brecha_media)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 10,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_ahorro_pct",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(ahorro_medio_pct)",
+                      "expression": "MEASURE(`ahorro_medio_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Ahorro potencial medio (%)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(ahorro_medio_pct)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 10,
+            "width": 3,
+            "height": 3
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "modelos_ml",
+      "displayName": "Modelos de Machine Learning",
+      "layout": [
+        {
+          "widget": {
+            "name": "intro_modelos",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## Modelos de inteligencia artificial del estudio\n",
+                    "**Qué hace:** muestra con qué precisión los modelos del estudio predicen el consumo, las emisiones y la letra energética de cada edificio.\n",
+                    "\n",
+                    "**Cómo:** se entrenaron y compararon varios algoritmos: un modelo avanzado (HistGradientBoosting) frente a un modelo base (Ridge) para el consumo, un modelo para las emisiones de CO₂, un clasificador (Random Forest) para la letra energética y una segmentación (KMeans) que agrupa los edificios en 3 segmentos de actuación.\n",
+                    "\n",
+                    "**Resultado:** el modelo final reduce el error típico de 114,0 a 104,9 kWh/m²·año y acierta la letra energética en la mitad de los casos. En la dispersión, cada punto es un edificio: cuanto más cerca de la diagonal, mejor es la predicción. La detección de anomalías señala además los edificios con consumos o emisiones atípicos."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "tabla_metricas",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "modelos_ml",
+                  "fields": [
+                    {
+                      "name": "tipo_modelo",
+                      "expression": "`tipo_modelo`"
+                    },
+                    {
+                      "name": "modelo",
+                      "expression": "`modelo`"
+                    },
+                    {
+                      "name": "measure(rmse)",
+                      "expression": "MEASURE(`rmse`)"
+                    },
+                    {
+                      "name": "measure(mae)",
+                      "expression": "MEASURE(`mae`)"
+                    },
+                    {
+                      "name": "measure(r2)",
+                      "expression": "MEASURE(`r2`)"
+                    },
+                    {
+                      "name": "measure(exactitud)",
+                      "expression": "MEASURE(`exactitud`)"
+                    },
+                    {
+                      "name": "measure(f1_ponderado)",
+                      "expression": "MEASURE(`f1_ponderado`)"
+                    },
+                    {
+                      "name": "measure(silueta)",
+                      "expression": "MEASURE(`silueta`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Métricas de calidad de los modelos (documentadas del estudio)"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "tipo_modelo"
+                  },
+                  {
+                    "fieldName": "modelo"
+                  },
+                  {
+                    "fieldName": "measure(rmse)"
+                  },
+                  {
+                    "fieldName": "measure(mae)"
+                  },
+                  {
+                    "fieldName": "measure(r2)"
+                  },
+                  {
+                    "fieldName": "measure(exactitud)"
+                  },
+                  {
+                    "fieldName": "measure(f1_ponderado)"
+                  },
+                  {
+                    "fieldName": "measure(silueta)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_anom_consumo",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_anomalia_consumo)",
+                      "expression": "MEASURE(`n_anomalia_consumo`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios anómalos en consumo"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(n_anomalia_consumo)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 9,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_anom_co2",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "measure(n_anomalia_co2)",
+                      "expression": "MEASURE(`n_anomalia_co2`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Edificios anómalos en emisiones"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(n_anomalia_co2)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 13,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "scatter_real_predicho",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "consumo_real",
+                      "expression": "`consumo_real`"
+                    },
+                    {
+                      "name": "consumo_predicho",
+                      "expression": "`consumo_predicho`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Consumo real vs consumo predicho (muestra de edificios)"
+              },
+              "version": 3,
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "consumo_real",
+                  "displayName": "Consumo real (kWh/m²·año)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "consumo_predicho",
+                  "displayName": "Consumo predicho (kWh/m²·año)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 8,
+            "height": 8
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "priorizacion_territorial",
+      "displayName": "Priorización Territorial",
+      "layout": [
+        {
+          "widget": {
+            "name": "intro_territorial",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## Dónde concentrar la inversión: priorización territorial\n",
+                    "**Qué hace:** identifica dónde se concentra el ahorro potencial en las tres provincias aragonesas y en los municipios con mayor margen de mejora.\n",
+                    "\n",
+                    "**Cómo:** se suman los ahorros potenciales estimados de cada edificio por provincia y municipio, junto con el consumo medio, las emisiones medias y el número de edificios anómalos.\n",
+                    "\n",
+                    "**Resultado:** Zaragoza concentra 4.668 GWh/año de ahorro potencial, seguida de Huesca (839) y Teruel (311); la ciudad de Zaragoza por sí sola representa 3.831,7 GWh/año. La tabla de detalle municipal permite priorizar campañas concretas."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_provincias",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "measure(ahorro_gwh)",
+                      "expression": "MEASURE(`ahorro_gwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Ahorro potencial por provincia (GWh/año)"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "provincia",
+                  "displayName": "provincia",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(ahorro_gwh)",
+                  "displayName": "ahorro_gwh",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "provincia",
+                  "displayName": "provincia",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "tabla_municipios",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top_municipios",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    },
+                    {
+                      "name": "measure(ahorro_gwh)",
+                      "expression": "MEASURE(`ahorro_gwh`)"
+                    },
+                    {
+                      "name": "measure(consumo_medio)",
+                      "expression": "MEASURE(`consumo_medio`)"
+                    },
+                    {
+                      "name": "measure(emision_media)",
+                      "expression": "MEASURE(`emision_media`)"
+                    },
+                    {
+                      "name": "measure(n_anomalias)",
+                      "expression": "MEASURE(`n_anomalias`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Detalle de los 15 municipios con mayor ahorro potencial"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "municipio"
+                  },
+                  {
+                    "fieldName": "provincia"
+                  },
+                  {
+                    "fieldName": "measure(n_edificios)"
+                  },
+                  {
+                    "fieldName": "measure(ahorro_gwh)"
+                  },
+                  {
+                    "fieldName": "measure(consumo_medio)"
+                  },
+                  {
+                    "fieldName": "measure(emision_media)"
+                  },
+                  {
+                    "fieldName": "measure(n_anomalias)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_municipios_ahorro",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "measure(ahorro_gwh)",
+                      "expression": "MEASURE(`ahorro_gwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Top 15 municipios por ahorro potencial (GWh/año)"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "municipio",
+                  "displayName": "municipio",
+                  "scale": {
+                    "categorySize": {
+                      "number": 15,
+                      "type": "number-of-categories"
+                    },
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(ahorro_gwh)",
+                  "displayName": "ahorro_gwh",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "municipio",
+                  "displayName": "municipio",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 6,
+            "height": 8
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "sugerencias_planes",
+      "displayName": "Sugerencias y Planes de Trabajo",
+      "layout": [
+        {
+          "widget": {
+            "name": "intro_planes",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "## Sugerencias de mejora y planes de trabajo\n",
+                    "**Qué hace:** traduce el análisis en acciones concretas: qué medida aplicar a cada edificio y con qué horizonte, organizado en tres segmentos de actuación.\n",
+                    "\n",
+                    "**Cómo:** a cada edificio se le asigna una medida principal de mejora y una letra objetivo; después se agrupan en segmentos (S1, S2, S3) con planes de trabajo que definen la medida dominante y el horizonte temporal.\n",
+                    "\n",
+                    "**Resultado:** S1 agrupa 90.135 edificios con 2.066 GWh de ahorro; S2, 8.186 edificios con 3.095 GWh en horizonte corto (el mayor retorno por edificio); y S3, 56.217 edificios con 657 GWh."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "tabla_planes",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "planes_trabajo",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "letra_tipica",
+                      "expression": "`letra_tipica`"
+                    },
+                    {
+                      "name": "letra_objetivo",
+                      "expression": "`letra_objetivo`"
+                    },
+                    {
+                      "name": "medida_dominante",
+                      "expression": "`medida_dominante`"
+                    },
+                    {
+                      "name": "horizonte",
+                      "expression": "`horizonte`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    },
+                    {
+                      "name": "measure(n_p1)",
+                      "expression": "MEASURE(`n_p1`)"
+                    },
+                    {
+                      "name": "measure(ahorro_total_gwh)",
+                      "expression": "MEASURE(`ahorro_total_gwh`)"
+                    },
+                    {
+                      "name": "measure(consumo_medio)",
+                      "expression": "MEASURE(`consumo_medio`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Planes de trabajo por segmento"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "segmento"
+                  },
+                  {
+                    "fieldName": "letra_tipica"
+                  },
+                  {
+                    "fieldName": "letra_objetivo"
+                  },
+                  {
+                    "fieldName": "medida_dominante"
+                  },
+                  {
+                    "fieldName": "horizonte"
+                  },
+                  {
+                    "fieldName": "measure(n_edificios)"
+                  },
+                  {
+                    "fieldName": "measure(n_p1)"
+                  },
+                  {
+                    "fieldName": "measure(ahorro_total_gwh)"
+                  },
+                  {
+                    "fieldName": "measure(consumo_medio)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_medidas",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "medida_principal",
+                      "expression": "`medida_principal`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Edificios por medida principal sugerida",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "medida_principal",
+                  "displayName": "medida_principal",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(n_edificios)",
+                  "displayName": "n_edificios",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "medida_principal",
+                  "displayName": "medida_principal",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_letra_objetivo",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "clase_objetivo",
+                      "expression": "`clase_objetivo`"
+                    },
+                    {
+                      "name": "measure(n_edificios)",
+                      "expression": "MEASURE(`n_edificios`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Edificios por letra objetivo",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "clase_objetivo",
+                  "displayName": "clase_objetivo",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(n_edificios)",
+                  "displayName": "n_edificios",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "clase_objetivo",
+                  "displayName": "clase_objetivo",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_ahorro_objetivo",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "clase_objetivo",
+                      "expression": "`clase_objetivo`"
+                    },
+                    {
+                      "name": "measure(ahorro_estimado_gwh)",
+                      "expression": "MEASURE(`ahorro_estimado_gwh`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Ahorro estimado por letra objetivo (GWh/año)",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "clase_objetivo",
+                  "displayName": "clase_objetivo",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(ahorro_estimado_gwh)",
+                  "displayName": "ahorro_estimado_gwh",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "clase_objetivo",
+                  "displayName": "clase_objetivo",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 17,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "f_provincia",
+            "queries": [
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_provincia",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "provincia_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_provincia",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "provincia_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_provincia",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "provincia_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_provincia",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "provincia_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e5a1c1581769fbcafc87a48_provincia",
+                "query": {
+                  "datasetName": "top_municipios",
+                  "fields": [
+                    {
+                      "name": "provincia",
+                      "expression": "`provincia`"
+                    },
+                    {
+                      "name": "provincia_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Provincia",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "provincia",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_provincia"
+                  },
+                  {
+                    "fieldName": "provincia",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_provincia"
+                  },
+                  {
+                    "fieldName": "provincia",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_provincia"
+                  },
+                  {
+                    "fieldName": "provincia",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_provincia"
+                  },
+                  {
+                    "fieldName": "provincia",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e5a1c1581769fbcafc87a48_provincia"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_municipio",
+            "queries": [
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_municipio",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "municipio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_municipio",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "municipio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_municipio",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "municipio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_municipio",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "municipio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e5a1c1581769fbcafc87a48_municipio",
+                "query": {
+                  "datasetName": "top_municipios",
+                  "fields": [
+                    {
+                      "name": "municipio",
+                      "expression": "`municipio`"
+                    },
+                    {
+                      "name": "municipio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Municipio",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "municipio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_municipio"
+                  },
+                  {
+                    "fieldName": "municipio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_municipio"
+                  },
+                  {
+                    "fieldName": "municipio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_municipio"
+                  },
+                  {
+                    "fieldName": "municipio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_municipio"
+                  },
+                  {
+                    "fieldName": "municipio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e5a1c1581769fbcafc87a48_municipio"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_tipo_edificio",
+            "queries": [
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_tipo_edificio",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "tipo_edificio",
+                      "expression": "`tipo_edificio`"
+                    },
+                    {
+                      "name": "tipo_edificio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_tipo_edificio",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "tipo_edificio",
+                      "expression": "`tipo_edificio`"
+                    },
+                    {
+                      "name": "tipo_edificio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_tipo_edificio",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "tipo_edificio",
+                      "expression": "`tipo_edificio`"
+                    },
+                    {
+                      "name": "tipo_edificio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_tipo_edificio",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "tipo_edificio",
+                      "expression": "`tipo_edificio`"
+                    },
+                    {
+                      "name": "tipo_edificio_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Tipo de edificio",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "tipo_edificio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_tipo_edificio"
+                  },
+                  {
+                    "fieldName": "tipo_edificio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_tipo_edificio"
+                  },
+                  {
+                    "fieldName": "tipo_edificio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_tipo_edificio"
+                  },
+                  {
+                    "fieldName": "tipo_edificio",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_tipo_edificio"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_letra",
+            "queries": [
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_clasificacion_consumo",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "clasificacion_consumo",
+                      "expression": "`clasificacion_consumo`"
+                    },
+                    {
+                      "name": "clasificacion_consumo_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_clasificacion_consumo",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "clasificacion_consumo",
+                      "expression": "`clasificacion_consumo`"
+                    },
+                    {
+                      "name": "clasificacion_consumo_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_clasificacion_consumo",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "clasificacion_consumo",
+                      "expression": "`clasificacion_consumo`"
+                    },
+                    {
+                      "name": "clasificacion_consumo_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Letra energética",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "clasificacion_consumo",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_clasificacion_consumo"
+                  },
+                  {
+                    "fieldName": "clasificacion_consumo",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_clasificacion_consumo"
+                  },
+                  {
+                    "fieldName": "clasificacion_consumo",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_clasificacion_consumo"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_prioridad",
+            "queries": [
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_prioridad",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "prioridad",
+                      "expression": "`prioridad`"
+                    },
+                    {
+                      "name": "prioridad_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_prioridad",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "prioridad",
+                      "expression": "`prioridad`"
+                    },
+                    {
+                      "name": "prioridad_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_prioridad",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "prioridad",
+                      "expression": "`prioridad`"
+                    },
+                    {
+                      "name": "prioridad_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_prioridad",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "prioridad",
+                      "expression": "`prioridad`"
+                    },
+                    {
+                      "name": "prioridad_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Prioridad",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "prioridad",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_prioridad"
+                  },
+                  {
+                    "fieldName": "prioridad",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_prioridad"
+                  },
+                  {
+                    "fieldName": "prioridad",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_prioridad"
+                  },
+                  {
+                    "fieldName": "prioridad",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_prioridad"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_segmento",
+            "queries": [
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_segmento",
+                "query": {
+                  "datasetName": "resultados_optimizacion",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "segmento_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_segmento",
+                "query": {
+                  "datasetName": "sugerencias",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "segmento_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_segmento",
+                "query": {
+                  "datasetName": "resumen_gerencial",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "segmento_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00dee1958883e4092e798a274_segmento",
+                "query": {
+                  "datasetName": "planes_trabajo",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "segmento_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_segmento",
+                "query": {
+                  "datasetName": "muestra_predicha",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "segmento_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Segmento",
+                  "fields": []
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "segmento",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00e2110b39024cd50f1c46e35_segmento"
+                  },
+                  {
+                    "fieldName": "segmento",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d2e17adb768076d32171ffa_segmento"
+                  },
+                  {
+                    "fieldName": "segmento",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00d8f1173b63279f5dcb9be6f_segmento"
+                  },
+                  {
+                    "fieldName": "segmento",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00dee1958883e4092e798a274_segmento"
+                  },
+                  {
+                    "fieldName": "segmento",
+                    "queryName": "dashboards/01f1e3befa1f1fcb80c90c93592b4391/datasets/01f1e3c00c6f14ccbb8370ffdbc1dd23_segmento"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}

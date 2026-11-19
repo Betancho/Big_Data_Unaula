@@ -1,0 +1,8 @@
+# Exportes de espacios Genie (.geniespace.json): no son un tipo de asset
+# soportado por Git Folders y rompen el commit ("unable to index file").
+# El Genie vive en el workspace; este archivo evita que Git intente versionarlo.
+*.geniespace.json
+
+# Experimento MLflow: tampoco es un asset soportado por Git Folders.
+# Los modelos quedan registrados en el registro de MLflow, no en el repo.
+Optimizacion_Energia_Aragon

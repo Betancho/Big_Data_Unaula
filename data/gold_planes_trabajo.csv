@@ -1,0 +1,4 @@
+segmento,n_edificios,consumo_medio,n_p1,ahorro_total_gwh,letra_tipica,letra_objetivo,medida_dominante,horizonte
+S1,90135,318.2,27181,2065.6,E,A,"Rehabilitación integral de envolvente (fachada, cubierta y ventanas)",Largo (5+ años)
+S2,8186,285.8,8059,3094.6,E,A,"Rehabilitación integral de envolvente (fachada, cubierta y ventanas)",Corto (0-2 años)
+S3,56217,158.4,3395,657.4,E,A,"Ajuste y mejora de instalaciones (calefacción, ACS y control)",Largo (5+ años)
