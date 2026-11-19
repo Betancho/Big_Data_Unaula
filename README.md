@@ -1,5 +1,9 @@
 # Optimización Energética de Edificios — Aragón
 
+| Autor | Autor |
+| --- | --- |
+| Daniel Betancur | Jordan Usuga |
+
 Proyecto de Big Data sobre los **certificados de eficiencia energética de edificios de Aragón** (España)
 (dataset de Kaggle: `isabelocastillo/eficiencia-energetica-edificios-de-aragon`, ~180.000 certificados).
 
