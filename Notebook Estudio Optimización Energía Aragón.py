@@ -3,6 +3,12 @@
 # MAGIC %md
 # MAGIC # Estudio de Optimización Energética de Edificios de Aragón
 # MAGIC
+# MAGIC ## Autores
+# MAGIC
+# MAGIC | Autor | Autor |
+# MAGIC | --- | --- |
+# MAGIC | Daniel Betancur | Jordan Usuga |
+# MAGIC
 # MAGIC ## Introducción
 # MAGIC
 # MAGIC En Aragón el consumo energético de las edificaciones es de interés público e impacta diferentes esferas de la economía y del bienestar ambiental. Dicho consumo está relacionado con características puntuales de los edificios como la antigüedad, la superficie, el tipo de construcción y su ubicación. En este proyecto se usaron datos abiertos suministrados por el Gobierno de Aragón sobre el consumo y las emisiones de CO₂, con el fin de realizar un análisis exploratorio bajo la estructura medallion (bronze → silver → gold) que permita generar un modelo predictivo y de recomendaciones sobre el consumo y la eficiencia energética en la zona.
